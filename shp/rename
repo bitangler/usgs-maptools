@@ -1,0 +1,13 @@
+#!/bin/bash
+# Rename USGS index shapefiles from The National Map[1].
+#
+# [1]: https://viewer.nationalmap.gov/basic/
+
+STATE=$1
+
+for i in Shape/CellGrid_7_5Minute*; do
+    j=`basename $i`
+    cp $i $STATE-$j
+done
+
+rm -rf Shape/

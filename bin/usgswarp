@@ -1,0 +1,28 @@
+#!/bin/bash
+# -*- coding: utf-8 -*-
+# Convert USGS GeoPDF files to GeoTIFF using gdalwarp.
+#
+# usage: usgswarp FILENAME.pdf
+
+OPTIONS="--config GDAL_PDF_LAYERS_OFF Map_Collar,Map_Frame.Projections_and_Grids,Images,Map_Frame.Projection_and_Grids"
+
+# with shaded terrain relief (prettier)
+#OPTIONS="--config GDAL_PDF_LAYERS_OFF Map_Collar,Map_Frame.Projections_and_Grids,Map_Frame.Boundary_Features_and_Names,Images,Map_Frame.Projection_and_Grids,Map_Frame.Boundaries"
+
+# without shaded terrain relief (cleaner for printing)
+OPTIONS="--config GDAL_PDF_LAYERS_OFF Map_Collar,Map_Frame.Projections_and_Grids,Map_Frame.Boundary_Features_and_Names,Map_Frame.Terrain.Shaded_Relief,Images,Map_Frame.Projection_and_Grids,Map_Frame.Boundaries"
+
+# lower resolution (for testing)
+#OPTIONS="$OPTIONS --config GDAL_PDF_DPI 100"
+
+for i in $*; do
+    prefix=`basename $i | sed 's/\..*//'`
+    rm -f $prefix.tiff
+
+    cutline.py -o $prefix.geojson $prefix.pdf
+
+    echo -n "gdalwarp: "
+    gdalwarp $OPTIONS -r lanczos -dstalpha -cutline $prefix.geojson -crop_to_cutline -of GTiff $prefix.pdf $prefix.tiff
+
+    rm -f $prefix.geojson
+done
